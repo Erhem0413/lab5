@@ -1,42 +1,92 @@
-def calculate_bmi(weight, height):
-  """Calculates the Body Mass Index (BMI) for a given weight and height.
+import random
 
-  Args:
-      weight (float): Weight in kilograms.
-      height (float): Height in meters.
+# Define game parameters
+SIZE = 3  # Grid size (3x3)
+EMPTY_TILE = 0 
 
-  Returns:
-      float: The calculated BMI value.
+def generate_board():
   """
-  if height <= 0:
-    raise ValueError("Height cannot be zero or negative")
-  bmi = weight / (height * height)
-  return bmi
-
-def interpret_bmi(bmi):
-  """Interprets the calculated BMI value based on standard BMI categories.
-
-  Args:
-      bmi (float): The calculated BMI value.
-
-  Returns:
-      str: A string interpretation of the BMI category.
+  Generates a random board configuration with the empty tile.
   """
-  if bmi < 18.5:
-    return "Underweight"
-  elif bmi < 25:
-    return "Normal weight"
-  elif bmi < 30:
-    return "Overweight"
-  else:
-    return "Obese"
+  tiles = list(range(1, SIZE * SIZE + 1))
+  random.shuffle(tiles)
+  tiles[random.randint(0, len(tiles) - 1)] = EMPTY_TILE
+  return tiles
 
-# Example usage
-weight = 70.0
-height = 1.75
+def print_board(board):
+  """
+  Prints the game board in a user-friendly format.
+  """
+  for i in range(SIZE):
+    for j in range(SIZE):
+      tile = board[i * SIZE + j]
+      print(tile if tile else " ", end=" ")
+    print()
 
-bmi = calculate_bmi(weight, height)
-bmi_interpretation = interpret_bmi(bmi)
+def get_empty_tile_position(board):
+  """
+  Finds the position of the empty tile on the board.
+  """
+  for i in range(SIZE):
+    for j in range(SIZE):
+      if board[i * SIZE + j] == EMPTY_TILE:
+        return i, j
 
-print(f"BMI for weight {weight} kg and height {height} m: {bmi:.2f}")
-print(f"BMI Interpretation: {bmi_interpretation}")
+def is_valid_move(board, move):
+  """
+  Checks if the requested move is valid (adjacent to empty tile).
+  """
+  empty_row, empty_col = get_empty_tile_position(board)
+  row, col = move
+  return (abs(row - empty_row) + abs(col - empty_col)) == 1
+
+def make_move(board, move):
+  """
+  Swaps the empty tile with the tile in the specified direction.
+  """
+  if not is_valid_move(board, move):
+    return
+
+  empty_row, empty_col = get_empty_tile_position(board)
+  row, col = move
+  board[empty_row * SIZE + empty_col], board[row * SIZE + col] = board[row * SIZE + col], board[empty_row * SIZE + empty_col]
+
+def is_game_won(board):
+  """
+  Checks if the board is in the solved state (tiles in order).
+  """
+  return board == list(range(1, SIZE * SIZE + 1)) + [EMPTY_TILE]
+
+# Main game loop
+def main():
+  board = generate_board()
+  print("Welcome to the Slide Puzzle!")
+
+  while True:
+    print_board(board)
+    
+    # Get user input
+    move = input("Enter your move (e.g., 'w', 'a', 's', 'd'): ")
+
+    # Translate input to move direction
+    if move == "w":
+      move_row, move_col = -1, 0
+    elif move == "a":
+      move_row, move_col = 0, -1
+    elif move == "s":
+      move_row, move_col = 1, 0
+    elif move == "d":
+      move_row, move_col = 0, 1
+    else:
+      print("Invalid move. Please try again.")
+      continue
+
+    make_move(board, (move_row, move_col))
+
+    if is_game_won(board):
+      print_board(board)
+      print("Congratulations! You solved the puzzle.")
+      break
+
+if _name_ == "_main_":
+  main()
